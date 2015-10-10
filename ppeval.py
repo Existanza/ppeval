@@ -1,10 +1,10 @@
 import requests
 import ast
-import sqlite3
+import psycopg2
 
 __author__ = 'Existanza'
 
-key_file = open('/home/mz/PycharmProjects/osukey.txt', 'r')
+key_file = open('/home/mz/PycharmProjects/keys/osu.txt', 'r')
 api_key = key_file.read()
 api_key = api_key[:-1]
 user = '2063607'
@@ -12,7 +12,11 @@ limit = '3'  # 1-50
 game_mode = '1'  # 0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania
 convert = '0'   # specify whether converted beatmaps are included (0 = not included, 1 = included).
 # Only has an effect if m is chosen and not 0. Optional, default is 0.
-conn = sqlite3.connect('taikopersonal2015.db')
+db_name = 'db6'
+file = open('/home/mz/PycharmProjects/keys/postgres.txt', 'r')
+pwd = file.read()
+pwd = pwd[:-1]
+conn = psycopg2.connect(database=db_name, user='postgres', password=pwd)
 c = conn.cursor()
 
 
@@ -44,19 +48,19 @@ def get_scores(key, title, version, approved_date, stars, bpm, hit_length, user_
         mode_dic = {'0': '', '16': 'HR', '64': 'DT', '80': 'HRDT', '576': 'DT', '592': 'HRDT'}
         if mode in mode_dic:
             if mode_dic[mode] == 'HR' and not hr_found:
-                c.execute('''INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?)''',
+                c.execute('''INSERT INTO maps VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
                           (key, title, version, approved_date, stars, score, mode_dic[mode], bpm, hit_length, user_score))
                 hr_found = True
             elif mode_dic[mode] == 'DT' and not dt_found:
-                c.execute('''INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?)''',
+                c.execute('''INSERT INTO maps VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
                           (key, title, version, approved_date, stars, score, mode_dic[mode], bpm, hit_length, user_score))
                 dt_found = True
             elif mode_dic[mode] == 'HRDT' and not hrdt_found:
-                c.execute('''INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?)''',
+                c.execute('''INSERT INTO maps VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
                           (key, title, version, approved_date, stars, score, mode_dic[mode], bpm, hit_length, user_score))
                 hrdt_found = True
             elif mode_dic[mode] == '' and not no_mod_found:
-                c.execute('''INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?)''',
+                c.execute('''INSERT INTO maps VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
                           (key, title, version, approved_date, stars, score, mode_dic[mode], bpm, hit_length, user_score))
                 no_mod_found = True
     return approved_date
@@ -91,13 +95,13 @@ def get_all(game_mode):
 
 
 user_best(user, game_mode, limit)
-#
+
 # get_all(game_mode)
 
 
 conn.commit()
-i = 0
-for row in c.execute('''SELECT * FROM maps ORDER BY score'''):
-    i += 1
-print(i)
+print('k')
+c.execute('''SELECT * FROM maps ORDER BY score''')
+rows = c.fetchall()
+print(len(rows))
 conn.close()
