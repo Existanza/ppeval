@@ -1,11 +1,12 @@
-__author__ = 'Existanza'
-
 import requests
 import ast
 import sqlite3
 
-key_file = open('C:/pyton/keys/osu.txt', 'r')
+__author__ = 'Existanza'
+
+key_file = open('/home/mz/PycharmProjects/osukey.txt', 'r')
 api_key = key_file.read()
+api_key = api_key[:-1]
 user = '2063607'
 limit = '3'  # 1-50
 game_mode = '1'  # 0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania
@@ -14,11 +15,13 @@ convert = '0'   # specify whether converted beatmaps are included (0 = not inclu
 conn = sqlite3.connect('taikopersonal2015.db')
 c = conn.cursor()
 
+
 def beatmap_info(map_id, user_score):
     map_url = 'https://osu.ppy.sh/api/get_beatmaps' + '?k=' + api_key + '&b=' + map_id + '&m=' + game_mode + '&a=' + convert
     print('Getting map info: ' + map_id)
     rc_map = requests.get(map_url)
-    map_info = ast.literal_eval(rc_map.text)
+    rc_map_text = rc_map.text.replace(":null", ":\"null\"")
+    map_info = ast.literal_eval(rc_map_text)
     if map_info:
         for i in range(len(map_info)):
             dict = ast.literal_eval(str(map_info[i]))
@@ -73,9 +76,10 @@ def get_all(game_mode):
     total = 0
     while date is not None:
         maps_url = 'https://osu.ppy.sh/api/get_beatmaps' + '?k=' + api_key + '&m=' + game_mode + \
-                   '&a=' + convert + '&since=' + date + '&limit=200'
+                   '&a=' + convert + '&since=' + date + '&limit=5'
         rc_maps = requests.get(maps_url)
-        maps_info = ast.literal_eval(rc_maps.text)
+        rc_maps_text = rc_maps.text.replace(":null", ":\"null\"")
+        maps_info = ast.literal_eval(rc_maps_text)
         for i in range(len(maps_info)):
             print(str(total + i) + '/' + str(total + len(maps_info)))
             di = ast.literal_eval(str(maps_info[i]))
@@ -86,8 +90,10 @@ def get_all(game_mode):
         total += len(maps_info)
 
 
-# user_best(user, game_mode, limit)
-get_all(game_mode)
+user_best(user, game_mode, limit)
+#
+# get_all(game_mode)
+
 
 conn.commit()
 i = 0

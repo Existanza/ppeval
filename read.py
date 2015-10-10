@@ -1,10 +1,10 @@
-__author__ = 'Existanza'
-
 import sqlite3
+
+_author_ = 'Existanza'
 
 
 def old_db():
-    f = open("C:/pyton/ppeval/osu.txt", "w")
+    f = open("/home/mz/PycharmProjects/osu.txt", "w")
     conn = sqlite3.connect('taikopersonal2015.db')
     c = conn.cursor()
     print('jaka piekna baza danych:')
